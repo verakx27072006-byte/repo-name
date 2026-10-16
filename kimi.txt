@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Викторина «Прямое или косвенное?» — 20 вопросов</title>
+<style>
+  :root { --border: #d9d9d9; --muted: #8a8a8a; --text: #1a1a1a; --bg: #ffffff; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif; background: #f2f2f2; color: var(--text); display: flex; justify-content: center; padding: 24px 12px; }
+  .card { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; max-width: 560px; width: 100%; padding: 24px; }
+  h2 { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+  .sub { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+  p.lead { color: #444; line-height: 22px; margin-bottom: 16px; font-size: 15px; }
+  button { font: inherit; cursor: pointer; }
+  .btn { border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; text-align: left; width: 100%; background: transparent; color: var(--text); transition: border-color .15s; }
+  .btn:hover { border-color: var(--text); }
+  .btn:disabled { cursor: default; }
+  .btn.ok { border-color: #2e9e5b; background: #eaf7ef; }
+  .btn.bad { border-color: #d64545; background: #fdeeee; }
+  .primary { background: var(--text); color: #fff; border: none; border-radius: 10px; padding: 10px 20px; font-weight: 500; }
+  .primary:hover { opacity: .85; }
+  .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 13px; color: var(--muted); }
+  .bar { height: 4px; border-radius: 2px; background: #e8e8e8; overflow: hidden; margin-bottom: 16px; }
+  .bar > div { height: 100%; background: var(--text); transition: width .25s; }
+  .q { font-size: 17px; font-weight: 500; line-height: 24px; margin-bottom: 16px; }
+  .grid { display: grid; gap: 8px; }
+  .chip { display: inline-block; border-radius: 6px; padding: 2px 10px; font-size: 12px; font-weight: 600; }
+  .chip.d { background: #e3ecfb; color: #1d5fd6; }
+  .chip.i { background: #fbe3e3; color: #d64545; }
+  .expl { border-left: 2px solid var(--border); padding-left: 12px; color: #555; font-size: 14px; line-height: 20px; margin-bottom: 16px; }
+  .fbv { margin-bottom: 8px; font-weight: 600; }
+  .end { text-align: center; padding: 12px 0; }
+  .end .big { font-size: 40px; font-weight: 600; margin-bottom: 4px; }
+  .end .v { color: #444; margin-bottom: 4px; }
+  .end .h { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
+</style>
+<base target="_blank">
+</head>
+<body>
+<div class="card">
+
+<div id="scr-start">
+  <p class="sub">Интерактив для пары · рискообразующие факторы</p>
+  <h2>Прямое или косвенное? — 20 вопросов</h2>
+  <p class="lead">На экране появляются события из жизни компании. Определи: это среда <b>прямого</b> воздействия (поставщики, потребители, конкуренты, профсоюзы, законы) или <b>косвенного</b> (экономика, политика, НТП, социо-культурные и международные факторы)?</p>
+  <button class="primary" onclick="start()">Начать — 20 вопросов</button>
+</div>
+
+<div id="scr-game" style="display:none;">
+  <div class="top">
+    <span id="qnum"></span>
+    <span>Счёт: <b id="score" style="color: var(--text);">0</b></span>
+  </div>
+  <div class="bar"><div id="prog" style="width:0%"></div></div>
+  <p class="q" id="qtext"></p>
+  <div class="grid">
+    <button class="btn" id="bD" onclick="answer(1)">Среда прямого воздействия</button>
+    <button class="btn" id="bI" onclick="answer(0)">Среда косвенного воздействия</button>
+  </div>
+  <div id="fb" style="display:none; margin-top: 16px;">
+    <p class="fbv" id="fbVerdict"></p>
+    <p class="expl" id="fbText"></p>
+    <button class="primary" onclick="next()">Дальше →</button>
+  </div>
+</div>
+
+<div id="scr-end" class="end" style="display:none;">
+  <p class="big" id="finalScore"></p>
+  <p class="v" id="finalVerdict"></p>
+  <p class="h" id="finalHint"></p>
+  <button class="primary" onclick="start()">Сыграть ещё раз</button>
+</div>
+
+</div>
+<script>
+const Q = [
+ { t: "Ключевой поставщик сырья поднял цены на 20%", d: 1,
+   e: "Поставщики материалов и ресурсов — элемент среды прямого воздействия: с ними компания связана договорами напрямую." },
+ { t: "Центральный банк объявил о девальвации национальной валюты", d: 0,
+   e: "Курс валют и макроэкономика — это состояние экономики, среда косвенного воздействия: влияет на всех сразу, управлять этим компания не может." },
+ { t: "Госдума приняла закон о повышении налога для отрасли", d: 1,
+   e: "Законы и государственные органы входят в среду прямого воздействия — изменение регулирования напрямую меняет условия ведения бизнеса." },
+ { t: "В стране введены международные санкции и разорваны торговые цепочки", d: 0,
+   e: "Международная обстановка — среда косвенного воздействия. Компания не управляет ею, но обязана под неё подстраиваться." },
+ { t: "Новый конкурент открылся через дорогу и уводит клиентов скидками", d: 1,
+   e: "Конкуренты — фактор среды прямого воздействия: их действия на рынке влияют на фирму непосредственно." },
+ { t: "В обществе взлетела мода на здоровый образ жизни и веганские продукты", d: 0,
+   e: "Мода и ценности общества — социо-культурные факторы среды косвенного воздействия." },
+ { t: "Профсоюз работников потребовал пересмотра условий труда", d: 1,
+   e: "Профсоюзы относятся к среде прямого воздействия: они напрямую влияют на трудовые отношения внутри компании." },
+ { t: "Быстрое развитие искусственного интеллекта сделало часть услуг устаревшими", d: 0,
+   e: "Научно-технический прогресс — среда косвенного воздействия: технологии меняют рынок для всех участников разом." },
+ { t: "Крупнейший клиент компании расторг долгосрочный договор", d: 1,
+   e: "Потребители — элемент среды прямого воздействия: уход клиента немедленно бьёт по выручке." },
+ { t: "Сменилось правительство и запустила новая промышленная политика", d: 0,
+   e: "Политические факторы — среда косвенного воздействия: власть и её курс влияют на бизнес через общие правила игры." },
+ { t: "Трудовая инспекция объявила внеплановую проверку предприятия", d: 1,
+   e: "Государственные органы входят в среду прямого воздействия — проверка напрямую касается деятельности конкретной фирмы." },
+ { t: "В стране начался экономический спад, растёт безработица", d: 0,
+   e: "Состояние экономики — среда косвенного воздействия: спад снижает покупательную способность всего рынка." },
+ { t: "Производитель комплектующих обанкротился и пропал с рынка", d: 1,
+   e: "Это поставщик — элемент среды прямого воздействия. Потеря поставщика напрямую рушит производственную цепочку." },
+ { t: "Население страны стареет: растёт доля пожилых людей", d: 0,
+   e: "Демография — социо-культурный фактор среды косвенного воздействия: меняет структуру спроса в целом." },
+ { t: "Вступил в силу закон, обязующий маркировать весь товар по новым правилам", d: 1,
+   e: "Законы и госорганы — среда прямого воздействия: новые требования напрямую меняют работу компании." },
+ { t: "Геополитический кризис поднял мировые цены на энергоресурсы", d: 0,
+   e: "Это международная обстановка — среда косвенного воздействия. Фирма не управляет ею, но цены на энергию меняют издержки всех." },
+ { t: "Поставщик задержал партию материалов на три недели", d: 1,
+   e: "Срыв поставок — риск среды прямого воздействия: поставщики связаны с фирмой договорами напрямую." },
+ { t: "Центральный банк поднял ключевую ставку, кредиты для бизнеса подорожали", d: 0,
+   e: "Ключевая ставка и кредитные условия — состояние экономики, среда косвенного воздействия." },
+ { t: "Постоянные клиенты массово перешли к конкуренту из-за его нового продукта", d: 1,
+   e: "Потребители — среда прямого воздействия: изменение их запросов сразу отражается на выручке." },
+ { t: "Возросла популярность маркетплейсов, покупатели уходят в онлайн-шопинг", d: 0,
+   e: "Цифровизация покупательских привычек — это НТП плюс социо-культурные факторы, среда косвенного воздействия." }
+];
+let i = 0, score = 0, locked = false;
+
+function show(id){ ["scr-start","scr-game","scr-end"].forEach(s => document.getElementById(s).style.display = s===id ? "block" : "none"); }
+function start(){ i = 0; score = 0; show("scr-game"); render(); }
+function render(){
+  locked = false;
+  document.getElementById("qnum").textContent = "Вопрос " + (i+1) + " из " + Q.length;
+  document.getElementById("score").textContent = score;
+  document.getElementById("prog").style.width = (i / Q.length * 100) + "%";
+  document.getElementById("qtext").textContent = Q[i].t;
+  document.getElementById("fb").style.display = "none";
+  ["bD","bI"].forEach(b => { const el = document.getElementById(b); el.disabled = false; el.classList.remove("ok","bad"); });
+}
+function answer(pick){
+  if (locked) return; locked = true;
+  const q = Q[i], right = pick === q.d;
+  if (right) score++;
+  const pickedBtn = pick === 1 ? "bD" : "bI", otherBtn = pick === 1 ? "bI" : "bD";
+  document.getElementById(pickedBtn).classList.add(right ? "ok" : "bad");
+  document.getElementById(otherBtn).disabled = true;
+  const v = document.getElementById("fbVerdict");
+  v.textContent = right ? "Верно!" : "Не совсем.";
+  v.style.color = right ? "#2e9e5b" : "#d64545";
+  const chip = q.d === 1 ? '<span class="chip d">прямое воздействие</span>' : '<span class="chip i">косвенное воздействие</span>';
+  document.getElementById("fbText").innerHTML = "Это среда " + chip + " — " + q.e;
+  document.getElementById("score").textContent = score;
+  document.getElementById("fb").style.display = "block";
+}
+function next(){
+  i++;
+  if (i < Q.length) render(); else {
+    show("scr-end");
+    document.getElementById("finalScore").textContent = score + " / " + Q.length;
+    let verdict = "Неплохо — факторы запомнятся после пары.", hint = "Совет: перед ответом спроси себя — можно ли этим фактором управлять напрямую?";
+    if (score >= 19) { verdict = "Отличный аналитик рисков!"; hint = "Можешь смело вести этот блок на паре сам."; }
+    else if (score >= 15) { verdict = "Уверенное понимание среды."; hint = "Запомни формулу: прямое — можно управлять, косвенное — только подстраиваться."; }
+    else if (score >= 10) { verdict = "База есть, но стоит повторить схемы."; hint = "Косвенные факторы — экономика, политика, НТП, социо-культура, международная обстановка."; }
+    document.getElementById("finalVerdict").textContent = verdict;
+    document.getElementById("finalHint").textContent = hint;
+  }
+}
+</script>
+</body>
+</html>
